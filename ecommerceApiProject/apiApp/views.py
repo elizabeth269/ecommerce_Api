@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import api_view
+from rest_framework.decorators import api_view
 from .models import Product, Category
 from rest_framework.response import Response
 from .serializers import CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer
