@@ -11,10 +11,10 @@ class CustomUser(AbstractUser):
     
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to='category_img', blank=True, null=True)
 
-    def __Str__(self):
+    def __str__(self):
         return self.name
 
 class Product(models.Model):
@@ -24,8 +24,8 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     featured = models.BooleanField(default=True)
     image = models.ImageField(upload_to="product_img", blank=True, null=True)
-    Category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='products', blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='products', blank=True, null=True)
 
-    def __Str__(self):
+    def __str__(self):
         return self.name
     
