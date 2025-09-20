@@ -40,7 +40,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             total = cartitem.product.price * cartitem.quantity
             return total
 
-class CartSerializer(serializers.ModelsSerializer):
+class CartSerializer(serializers.ModelSerializer):
     cartitems =CartItemSerializer(read_only=True, many=True)
     class Meta:
         model = Cart
