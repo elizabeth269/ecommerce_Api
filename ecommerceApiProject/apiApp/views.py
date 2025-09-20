@@ -18,6 +18,7 @@ def product_detial(request, slug):
     serializer = ProductDetailSerializer(products)
     return Response(serializer.data)
 
+
 @api_view(['GET'])
 def category_list(request):
     categories = Category.objects.all()
