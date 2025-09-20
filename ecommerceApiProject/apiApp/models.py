@@ -71,5 +71,9 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='item')
     quantity = models.IntegerField(default=1)
 
-    def __str(self):
+    def __str__(self):
         return f'{self.quantity} x {self.product.name} in cart {self.cart.cart_code}'
+    
+
+
+
