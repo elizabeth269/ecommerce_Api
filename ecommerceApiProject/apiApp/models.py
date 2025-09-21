@@ -76,7 +76,6 @@ class CartItem(models.Model):
         return f'{self.quantity} x {self.product.name} in cart {self.cart.cart_code}'
     
 
-
 class Review(models.Model):
     RATING_CHOICES = [
         (1, '1 - Poor'),
@@ -93,7 +92,7 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.user.user}'s review on {self.product.name}"
+        return f"{self.user.username}'s review on {self.product.name}"
     
     class Meta:
         unique_together = ['user', 'product']
@@ -101,5 +100,10 @@ class Review(models.Model):
     
 
 
+class ProductRating(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='rating')
+    average_rating = models.FloatField(default=0.0)
+    total_reviews = models.PositiveBigIntegerField(default=0)
 
-
+    def __str__(self):
+        return f"{self.product.name} - {self.average_rating} ({self.total_reviews} reviews)"

@@ -110,7 +110,7 @@ def add_review(request):
         review_text = request.data.get('review') or request.GET.get('reveiw')
 
         if not all([product_id, email,rating, review_text]):
-            return Response({'error': "all fields  [(product_id, email,rating, review_text) are required"})
+            return Response({'error': "all fields (product_id, email,rating, review_text) are required"})
         
         try:
             product = Product.objects.get(id=product_id)
