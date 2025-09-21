@@ -107,7 +107,7 @@ def add_review(request):
         product_id = request.data.get('product_id') or request.GET.get('product_id')
         email = request.data.get('email') or request.GET.get('email')
         rating = request.data.get('rating') or request.GET.get('rating')
-        review_text = request.data.get('review') or request.GET.get('reveiw')
+        review_text = request.data.get('review') or request.GET.get('review')
 
         if not all([product_id, email,rating, review_text]):
             return Response({'error': "all fields (product_id, email,rating, review_text) are required"})
@@ -132,3 +132,36 @@ def add_review(request):
     except Exception as e:
         return Response({ 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+
+@api_view(['PUT'])
+def update_review(request, pk):
+    try:
+        review = Review.objects.get(id=pk)
+    except Review.DoesNotExist:
+        return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    rating = request.data.get('rating') or request.GET.get('rating')
+    review_text = request.data.get('review') or request.GET.get('review')
+
+    if rating:
+        review.rating = rating
+    if review_text:
+        review.review = review_text
+
+    review.save()
+
+    serializer = ReviewSerializer(review)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def delete_review(request, pk):
+    try:
+        review = Review.objects.get(id=pk)
+    except Review.DoesNotExist:
+        return Response({"error": "Review not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    review.delete()
+    return Response({"message": "Review deleted successfully!"}, status=status.HTTP_200_OK)
