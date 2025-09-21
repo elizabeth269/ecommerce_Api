@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer, WishlistSerializer
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 # Create your views here.
 User = get_user_model()
@@ -205,3 +206,14 @@ def add_to_wishlist(request):
     new_wishlist = Wishlist.objects.create(user=user, product=product)
     serializer = WishlistSerializer(new_wishlist)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def product_search(request):
+    query = request.query_params.get('query')
+    if not query:
+        return Response('no query provided', status=status.HTTP_400_BAD_REQUEST)
+    
+    products = Product.objects.filter(Q(name__icontains=query)|Q(description__icontains=query)|Q(category__name__icontains=query))
+
+    serializer = ProductListSerializer(products, many=True)
+    return Response(serializer.data)
