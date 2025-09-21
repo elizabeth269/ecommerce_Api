@@ -101,6 +101,18 @@ def update_cartitem_quantity(request):
     return Response({'data': serializer.data, 'message': 'cartitem udated successfully'}, status=status.HTTP_200_OK)
 
 
+@api_view(['DELETE'])
+def delete_cartitem(request, pk):
+    try:
+        review = CartItem.objects.get(id=pk)
+    except CartItem.DoesNotExist:
+        return Response({"error": "cartitem not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    review.delete()
+    return Response({"message": "cartitem deleted successfully!"}, status=status.HTTP_200_OK)
+
+
+
 @api_view(['POST'])
 def add_review(request):
     try:
