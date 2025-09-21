@@ -35,8 +35,9 @@ def category_detail(request, slug):
 
 @api_view(['POST'])
 def add_to_cart(request):
-    cart_code = request.data.get('cart_code')
-    product_id = request.data.get('product_id')
+    cart_code = request.data.get('cart_code') or request.GET.get('cart_code')
+    product_id = request.data.get('product_id') or request.GET.get('product_id')
+
 
     cart, created = Cart.objects.get_or_create(cart_code=cart_code)
     product = Product.objects.get(id=product_id)
