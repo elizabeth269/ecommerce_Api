@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from .models import Cart, CartItem, Product, Category
+from .models import Cart, CartItem, Product, Category, Review
 from rest_framework.response import Response
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer
 from rest_framework import status
+from django.contrib.auth import get_user_model
 
 # Create your views here.
+User = get_user_model()
+
 @api_view(['GET'])
 def product_list(request):
     products = Product.objects.filter(featured=True)
@@ -97,4 +100,35 @@ def update_cartitem_quantity(request):
     serializer = CartItemSerializer(cartitem)
     return Response({'data': serializer.data, 'message': 'cartitem udated successfully'}, status=status.HTTP_200_OK)
 
+
+@api_view(['POST'])
+def add_review(request):
+    try:
+        product_id = request.data.get('product_id') or request.GET.get('product_id')
+        email = request.data.get('email') or request.GET.get('email')
+        rating = request.data.get('rating') or request.GET.get('rating')
+        review_text = request.data.get('review') or request.GET.get('reveiw')
+
+        if not all([product_id, email,rating, review_text]):
+            return Response({'error': "all fields  [(product_id, email,rating, review_text) are required"})
+        
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'error': "product not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            return Response({
+                'error': 'user not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+        review = Review.objects.create(product=product, user=user, rating=rating, review=review_text)
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data)
+    
+    except Exception as e:
+        return Response({ 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
