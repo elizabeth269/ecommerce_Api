@@ -63,7 +63,7 @@ def update_cartitem_quantity(request):
     if cartitem_id is None or quantity is None:
         return Response(
             {
-                'error': 'item_id and qunatity are required'
+                'error': 'item_id and quantity are required'
             }, status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -96,3 +96,5 @@ def update_cartitem_quantity(request):
 
     serializer = CartItemSerializer(cartitem)
     return Response({'data': serializer.data, 'message': 'cartitem udated successfully'}, status=status.HTTP_200_OK)
+
+
