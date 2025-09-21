@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from .models import Cart, CartItem, Product, Category, Review
+from .models import Cart, CartItem, Product, Category, Review, Wishlist
 from rest_framework.response import Response
-from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer
+from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer, WishlistSerializer
 from rest_framework import status
 from django.contrib.auth import get_user_model
 
@@ -165,3 +165,31 @@ def delete_review(request, pk):
 
     review.delete()
     return Response({"message": "Review deleted successfully!"}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def add_to_wishlist(request):
+    email = request.data.get('email') or request.GET.get('email')
+    product_id = request.data.get('product_id') or request.GET.get('product_id')
+    if not email or not product_id:
+        return Response({'error': 'email and product_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({'error': 'user not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    try:
+        product = Product.objects.get(id=product_id)
+
+    except Product.DoesNotExist:
+        return Response({'error': "product does not exist"}, status=status.HTTP_404_NOT_FOUND)
+    
+    wishlist = Wishlist.objects.filter(user=user, product=product)
+    if wishlist:
+        wishlist.delete()
+        return Response('wishlist deleted successfull!', status=status.HTTP_200_OK)
+
+    new_wishlist = Wishlist.objects.create(user=user, product=product)
+    serializer = WishlistSerializer(new_wishlist)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

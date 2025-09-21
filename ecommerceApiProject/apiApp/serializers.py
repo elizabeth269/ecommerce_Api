@@ -77,7 +77,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'rating', 'review', 'created_at', 'updated_at', 'user'] 
 
 class WishlistSerializer(serializers.ModelSerializer):
-    class META:
+    class Meta:
         model = Wishlist
         fields = ['id', 'user', 'product', 'created_at']
         
