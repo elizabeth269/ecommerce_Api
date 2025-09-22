@@ -1,13 +1,17 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
+import stripe
 from .models import Cart, CartItem, Product, Category, Review, Wishlist
 from rest_framework.response import Response
 from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer, WishlistSerializer
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.conf import settings
 
 # Create your views here.
+stripe.api_key= settings.STRIPE_SECRET_KEY
 User = get_user_model()
 
 @api_view(['GET'])
@@ -217,3 +221,42 @@ def product_search(request):
 
     serializer = ProductListSerializer(products, many=True)
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+def create_checkout_session(request):
+    cart_code = request.data.get('cart_code') or request.GET.get('cart_code')
+    email = request.data.get('email') or request.GET.get('email')
+    if not cart_code or not email:
+        return Response({"error": "cart_code and email are required"}, status=400)
+    
+    try:
+        cart = Cart.objects.get(cart_code=cart_code)
+        checkout_session = stripe.checkout.Session.create(  
+            customer_email=email,
+            payment_method_types=["card"],
+                                                            
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "unit_amount": int(item.product.price) * 100,  # amount in cents ($20.00)
+                            "product_data": {
+                                "name": item.product.name
+                            },
+                        },
+                        "quantity": item.quantity,
+                    }
+                    for item in cart.cartitems.all()
+                ],
+                mode="payment",
+                success_url="http://127.0.0.1:8000/success/",
+                cancel_url="http://127.0.0.1:8000/cancel/",
+                #success_url=nextshopit.vercel.app/success
+                #cancel_url = l;;;;;;;;;;;;;;/cancel
+            )
+        return Response({"id": checkout_session})
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            
+        
