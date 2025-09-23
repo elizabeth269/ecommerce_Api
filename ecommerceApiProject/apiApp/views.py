@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 import stripe
-from .models import Cart, CartItem, Product, Category, Review, Wishlist
+from .models import Cart, CartItem, Order, OrderItem, Product, Category, Review, Wishlist
 from rest_framework.response import Response
 from .serializers import CartItemSerializer, CartSerializer, CategoryDetailSerializer, ProductListSerializer, ProductDetailSerializer, CategorySerializer, ReviewSerializer, WishlistSerializer
 from rest_framework import status
@@ -283,9 +283,23 @@ def my_webhook_view(request):
     event['type'] == 'checkout.session.completed'
     or event['type'] == 'checkout.session.async_payment_succeeded'
   ):
-    fulfill_checkout(event['data']['object']['id'])
+   session = event['data']['object']
 
   return HttpResponse(status=200)
 
-def fulfill_checkout(request):
-    pass
+def fulfill_checkout(session, cart_code):
+    order = Order.objects.create(
+        stripe_checkout_id=session['id'],
+        amount=session['amount_total'] / 100,
+        currency=session['currency'],
+        status='paid',
+    )
+
+    cart = Cart.objects.get(cart_code=cart_code)
+    cartitems = cart.cartitems.all()
+
+    for item in cartitems:
+        orderitem = OrderItem.objects.create(order=order, product=item.product, qunatity=item.quantity)
+
+        
+    cart.delete()
