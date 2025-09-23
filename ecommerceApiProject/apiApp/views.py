@@ -250,13 +250,12 @@ def create_checkout_session(request):
                     for item in cart.cartitems.all()
                 ],
                 mode="payment",
-                success_url="http://127.0.0.1:8000/success/",
-                cancel_url="http://127.0.0.1:8000/cancel/",
-                #success_url=nextshopit.vercel.app/success
-                #cancel_url = l;;;;;;;;;;;;;;/cancel
+                success_url="https://nextshoppit.vercel.app/success",
+                cancel_url="https://nextshoppit.vercel.app/cancel",
+            
             )
-        return Response({"id": checkout_session})
+        return Response({"data": checkout_session})
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
         
