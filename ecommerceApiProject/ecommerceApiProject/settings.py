@@ -34,9 +34,9 @@ ALLOWED_HOSTS = ['*']
 #     "127.0.0.1",
 #     "casterless-orville-lewdly.ngrok-free.dev",]
 
-# CSRF_TRUSTED_ORIGINS = [
-#     "https://*.ngrok-free.dev",
-# ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://ecommerceapiproject.up.railway.app",
+]
 # Application definition
 
 INSTALLED_APPS = [
