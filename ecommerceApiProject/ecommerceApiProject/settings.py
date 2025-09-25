@@ -28,14 +28,15 @@ SECRET_KEY = 'django-insecure-i^sc*qh-_6hs_lq&!t2b418(!5cm244xd(-p)9p!=3ig730m5(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = ["localhost",
-    "127.0.0.1",
-    "casterless-orville-lewdly.ngrok-free.dev",]
+# ALLOWED_HOSTS = ["localhost",
+#     "127.0.0.1",
+#     "casterless-orville-lewdly.ngrok-free.dev",]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.dev",
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://*.ngrok-free.dev",
+# ]
 # Application definition
 
 INSTALLED_APPS = [
@@ -50,7 +51,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,13 +83,28 @@ WSGI_APPLICATION = 'ecommerceApiProject.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+DB = os.getenv('DB')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if not DB:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'railway',
+            'USER': 'postgres',
+            'PASSWORD': os.getenv('PG_PASSWORD'),
+            'HOST': os.getenv('PG_HOST'),
+            'PORT': os.getenv('PG_PORT'),  # default Postgres port
+        }
+    }
+
 
 
 # Password validation
@@ -126,7 +143,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = 'media/'
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 MEDIA_ROOT = BASE_DIR/'media'
 
 # Default primary key field type

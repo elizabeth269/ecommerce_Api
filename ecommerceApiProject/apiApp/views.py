@@ -253,7 +253,7 @@ def create_checkout_session(request):
                 ],                       
             success_url="https://nextshoppit.vercel.app/success",
             cancel_url="https://nextshoppit.vercel.app/cancel",
-            metadata={'car_code': cart_code},
+            metadata={'cart_code': cart_code},
             
             )
         return Response({"data": checkout_session})
@@ -299,7 +299,7 @@ def fulfill_checkout(session, cart_code):
         amount=session['amount_total'] / 100,
         currency=session['currency'],
         status='paid',
-        customer_email=session['customer_emial'],
+        customer_email=session['customer_email'],
     )
 
     cart = Cart.objects.get(cart_code=cart_code)
@@ -309,4 +309,4 @@ def fulfill_checkout(session, cart_code):
         orderitem = OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
 
         
-    cart.delete
+    cart.delete()
