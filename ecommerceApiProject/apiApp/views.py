@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 stripe.api_key= settings.STRIPE_SECRET_KEY
-endpoint_secret = 'whsec_...'
+endpoint_secret = settings.WEBHOOK_SECRET
 User = get_user_model()
 
 @api_view(['GET'])
@@ -253,6 +253,7 @@ def create_checkout_session(request):
                 ],                       
             success_url="https://nextshoppit.vercel.app/success",
             cancel_url="https://nextshoppit.vercel.app/cancel",
+            metadata={'car_code': cart_code},
             
             )
         return Response({"data": checkout_session})
@@ -265,8 +266,10 @@ def create_checkout_session(request):
 @csrf_exempt
 def my_webhook_view(request):
   payload = request.body
-  sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-  event = None
+  sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+  if sig_header is None:
+        return HttpResponse(status=400)
+
 
   try:
     event = stripe.Webhook.construct_event(
@@ -284,6 +287,9 @@ def my_webhook_view(request):
     or event['type'] == 'checkout.session.async_payment_succeeded'
   ):
    session = event['data']['object']
+   cart_code = session.get('metadata', {}).get('cart_code')
+
+   fulfill_checkout(session, cart_code)
 
   return HttpResponse(status=200)
 
@@ -293,13 +299,14 @@ def fulfill_checkout(session, cart_code):
         amount=session['amount_total'] / 100,
         currency=session['currency'],
         status='paid',
+        customer_email=session['customer_emial'],
     )
 
     cart = Cart.objects.get(cart_code=cart_code)
     cartitems = cart.cartitems.all()
 
     for item in cartitems:
-        orderitem = OrderItem.objects.create(order=order, product=item.product, qunatity=item.quantity)
+        orderitem = OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity)
 
         
-    cart.delete()
+    cart.delete
